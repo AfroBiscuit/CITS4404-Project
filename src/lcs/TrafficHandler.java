@@ -17,7 +17,7 @@ public class TrafficHandler {
 	LaneIncrement laneInc = new LaneIncrement();
 	LaneDecrement laneDec = new LaneDecrement();
 	
-	int laneIncSleep = 500;
+	int laneIncSleep = 250;
 	int laneDecSleep = 5000;
 	
 	long startTime;
@@ -25,8 +25,12 @@ public class TrafficHandler {
 	boolean runningInc;
 	boolean runningDec;
 	
+	public int prob;
+	
 	public void trafficLoop(){
 		//implement main algorithm here
+		//set traffic mode
+		highTraffic(1);
 		//runs for 1 minute
 		startTime = System.currentTimeMillis();
 		laneInc.start();
@@ -40,15 +44,15 @@ public class TrafficHandler {
 	//threads needed for good simulation
 	
 	public void highTraffic(int lane){
-		//implement high traffic switcher here
+		prob = 10;
 	}
 	
 	public void medTraffic(int lane){
-		//implement medium traffic switcher here
+		prob = 30;
 	}
 	
 	public void lowTraffic(int lane){
-		//implement low traffic switcher here
+		prob = 50;
 	}
 	
 	public int getNorth(){
@@ -79,11 +83,11 @@ public class TrafficHandler {
 				int lanePick = rand.nextInt((3) + 1);
 				int probToJoin = rand.nextInt((100) + 1);
 				
-				if (probToJoin >= 70){
+				if (probToJoin >= prob){
 					laneNumbers[lanePick]++;
 					
 				}
-				System.out.println("N: " + laneNumbers[0] + " S: " + laneNumbers[1] + " E: " + laneNumbers[2] + " W: " + laneNumbers[3] + " " + (System.currentTimeMillis() - startTime));
+				if((System.currentTimeMillis() - startTime)%500 <= 10) System.out.println("N: " + laneNumbers[0] + " S: " + laneNumbers[1] + " E: " + laneNumbers[2] + " W: " + laneNumbers[3] + " " + (System.currentTimeMillis() - startTime));
 				
 				try {
 					Thread.sleep(laneIncSleep);
@@ -104,8 +108,9 @@ public class TrafficHandler {
 		public void run(){
 			runningDec = true;
 			
-			long loopStart = System.currentTimeMillis();
+			
 			while(System.currentTimeMillis() - startTime < 60000){
+				long loopStart = System.currentTimeMillis();
 				while(System.currentTimeMillis() - loopStart < laneDecSleep){
 					if(laneNumbers[0]>0) laneNumbers[0]--; //North Lane
 					if(laneNumbers[1]>0) laneNumbers[1]--; //South Lane
@@ -117,12 +122,6 @@ public class TrafficHandler {
 					}
 				}
 				
-				try {
-					Thread.sleep(laneDecSleep);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
 				loopStart = System.currentTimeMillis();
 				
 				while(System.currentTimeMillis() - loopStart < laneDecSleep){
