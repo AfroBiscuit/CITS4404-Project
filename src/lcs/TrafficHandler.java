@@ -18,7 +18,8 @@ public class TrafficHandler {
 	LaneDecrement laneDec = new LaneDecrement();
 	
 	int laneIncSleep = 250;
-	int laneDecSleep = 5000;
+	int laneDecSleep = 15000;
+	int timeThresh;
 	
 	long startTime;
 	
@@ -33,12 +34,14 @@ public class TrafficHandler {
 		highTraffic(1);
 		//runs for 1 minute
 		startTime = System.currentTimeMillis();
+
 		laneInc.start();
 		laneDec.start();
-		
+			
 		if(!runningInc) laneInc.interrupt();
 		if(!runningDec) laneDec.interrupt();
 		
+
 	}
 	
 	//threads needed for good simulation
@@ -56,18 +59,22 @@ public class TrafficHandler {
 	}
 	
 	public int getNorth(){
+		laneNorth = laneNumbers[0];
 		return laneNorth;
 	}
 	
 	public int getNSouth(){
+		laneSouth = laneNumbers[1];
 		return laneSouth;
 	}
 	
 	public int getEast(){
+		laneEast = laneNumbers[2];
 		return laneEast;
 	}
 	
 	public int getWest(){
+		laneWest = laneNumbers[3];
 		return laneWest;
 	}
 	
@@ -75,10 +82,44 @@ public class TrafficHandler {
 		//variables
 		@Override
 		public void run(){
-			Random rand = new Random();
 			runningInc = true;
+			//loop(60000);
+			//start at 12am -- 1 hour to 1 minute mapping
+			//12am to 5am - low
+			startTime = System.currentTimeMillis();
+			lowTraffic(1);
+			loop(150000);
+			//5am to 7am - medium
+			startTime = System.currentTimeMillis();
+			medTraffic(1);
+			loop(60000);
+			//7am to 10am - high
+			startTime = System.currentTimeMillis();
+			highTraffic(1);
+			loop(90000);
+			//10am to 4pm - medium
+			startTime = System.currentTimeMillis();
+			medTraffic(1);
+			loop(180000);
+			//4pm to 6pm - high
+			startTime = System.currentTimeMillis();
+			highTraffic(1);
+			loop(60000);
+			//6pm to 9pm - medium
+			startTime = System.currentTimeMillis();
+			medTraffic(1);
+			loop(90000);
+			//9pm to 12am - low
+			startTime = System.currentTimeMillis();
+			lowTraffic(1);
+			loop(90000);
 			
-			while(System.currentTimeMillis() - startTime < 60000){
+			runningInc = false;
+		}
+		
+		public void loop(int time){
+			Random rand = new Random();
+			while(System.currentTimeMillis() - startTime < time){
 				//calculate whether a car joins a lane, and pick which lane
 				int lanePick = rand.nextInt((3) + 1);
 				int probToJoin = rand.nextInt((100) + 1);
@@ -87,7 +128,7 @@ public class TrafficHandler {
 					laneNumbers[lanePick]++;
 					
 				}
-				if((System.currentTimeMillis() - startTime)%500 <= 10) System.out.println("N: " + laneNumbers[0] + " S: " + laneNumbers[1] + " E: " + laneNumbers[2] + " W: " + laneNumbers[3] + " " + (System.currentTimeMillis() - startTime));
+				if((System.currentTimeMillis() - startTime)%500 <= 50) System.out.println("N: " + laneNumbers[0] + " S: " + laneNumbers[1] + " E: " + laneNumbers[2] + " W: " + laneNumbers[3] + " " + (System.currentTimeMillis() - startTime));
 				
 				try {
 					Thread.sleep(laneIncSleep);
@@ -96,8 +137,6 @@ public class TrafficHandler {
 					e.printStackTrace();
 				}
 			}
-			
-			runningInc = false;
 		}
 		
 	}
@@ -108,14 +147,20 @@ public class TrafficHandler {
 		public void run(){
 			runningDec = true;
 			
+			loop(720000);
 			
-			while(System.currentTimeMillis() - startTime < 60000){
+			
+			runningDec = false;
+		}
+		
+		public void loop(int time){
+			while(System.currentTimeMillis() - startTime < time){
 				long loopStart = System.currentTimeMillis();
 				while(System.currentTimeMillis() - loopStart < laneDecSleep){
 					if(laneNumbers[0]>0) laneNumbers[0]--; //North Lane
 					if(laneNumbers[1]>0) laneNumbers[1]--; //South Lane
 					try {
-						Thread.sleep(1000);
+						Thread.sleep(500);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
@@ -128,15 +173,13 @@ public class TrafficHandler {
 					if(laneNumbers[2]>0) laneNumbers[2]--; //East Lane
 					if(laneNumbers[3]>0) laneNumbers[3]--; //West Lane
 					try {
-						Thread.sleep(1000);
+						Thread.sleep(500);
 					} catch (InterruptedException e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
 				}
 			}
-			
-			runningDec = false;
 		}
 	}
 	
