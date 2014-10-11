@@ -21,7 +21,8 @@ public class TrafficHandler {
 	
 	public int[] laneNumbers = new int[4]; //0 North, 1 South, 2 East, 3 West
 	
-	public int[] ignoreLanes = new int[2];
+	public int[] ignoreLanes = {4,5};
+	public int[] flagLanes = new int[4];
 	
 	LaneIncrement laneInc = new LaneIncrement();
 	LaneDecrement laneDec = new LaneDecrement();
@@ -42,7 +43,7 @@ public class TrafficHandler {
 	public void trafficLoop(){
 		//implement main algorithm here
 		//set traffic mode
-		highTraffic(1);
+		//highTraffic(1);
 		//runs for 1 minute
 		startTime = System.currentTimeMillis();
 
@@ -93,6 +94,8 @@ public class TrafficHandler {
 		ignoreLanes[0] = first;
 		ignoreLanes[1] = second;
 	}
+	
+	
 	
 	private class LaneIncrement extends Thread{
 		//variables
