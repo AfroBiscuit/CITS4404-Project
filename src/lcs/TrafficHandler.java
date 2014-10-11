@@ -1,5 +1,6 @@
 package lcs;
 
+import java.util.Arrays;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -18,7 +19,9 @@ public class TrafficHandler {
 	public int laneEast;
 	public int laneWest;
 	
-	public int[] laneNumbers = new int[4];
+	public int[] laneNumbers = new int[4]; //0 North, 1 South, 2 East, 3 West
+	
+	public int[] ignoreLanes = new int[2];
 	
 	LaneIncrement laneInc = new LaneIncrement();
 	LaneDecrement laneDec = new LaneDecrement();
@@ -86,6 +89,11 @@ public class TrafficHandler {
 		return laneWest;
 	}
 	
+	public void ignore(int first, int second){
+		ignoreLanes[0] = first;
+		ignoreLanes[1] = second;
+	}
+	
 	private class LaneIncrement extends Thread{
 		//variables
 		@Override
@@ -130,13 +138,16 @@ public class TrafficHandler {
 			while(System.currentTimeMillis() - startTime < time){
 				//calculate whether a car joins a lane, and pick which lane
 				int lanePick = rand.nextInt((3) + 1);
+				while(Arrays.asList(ignoreLanes).contains(lanePick)){ //skip lanes that do not have random cars added to them
+					lanePick = rand.nextInt((3) + 1);
+				}
 				int probToJoin = rand.nextInt((100) + 1);
 				
 				if (probToJoin >= prob){
 					laneNumbers[lanePick]++;
 					
 				}
-				if((System.currentTimeMillis() - startTime)%500 <= 50) System.out.println("N: " + laneNumbers[0] + " S: " + laneNumbers[1] + " E: " + laneNumbers[2] + " W: " + laneNumbers[3] + " " + (System.currentTimeMillis() - startTime));
+				//if((System.currentTimeMillis() - startTime)%500 <= 50) System.out.println("N: " + laneNumbers[0] + " S: " + laneNumbers[1] + " E: " + laneNumbers[2] + " W: " + laneNumbers[3] + " " + (System.currentTimeMillis() - startTime));
 				
 				try {
 					Thread.sleep(laneIncSleep);
