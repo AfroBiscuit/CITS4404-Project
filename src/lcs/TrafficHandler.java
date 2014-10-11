@@ -3,6 +3,12 @@ package lcs;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Class that handles a singular traffic intersection and its lights, using a series of states and a traffic generator. This will then be
+ * expanded into a four intersection system for further analysis of the LCS algorithm
+ * @author Dom
+ *
+ */
 public class TrafficHandler {
 	
 	public TrafficHandler(){}
@@ -27,6 +33,8 @@ public class TrafficHandler {
 	boolean runningDec;
 	
 	public int prob;
+	
+	public int state;
 	
 	public void trafficLoop(){
 		//implement main algorithm here
@@ -156,6 +164,8 @@ public class TrafficHandler {
 		public void loop(int time){
 			while(System.currentTimeMillis() - startTime < time){
 				long loopStart = System.currentTimeMillis();
+				//simple cyclic traffic light loop
+				/*
 				while(System.currentTimeMillis() - loopStart < laneDecSleep){
 					if(laneNumbers[0]>0) laneNumbers[0]--; //North Lane
 					if(laneNumbers[1]>0) laneNumbers[1]--; //South Lane
@@ -178,6 +188,66 @@ public class TrafficHandler {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
+				}*/
+				
+				if(state == 0){
+					//North & South go, East & West stop
+					while(System.currentTimeMillis() - loopStart < laneDecSleep){
+						if(laneNumbers[0]>0) laneNumbers[0]--; //North Lane
+						if(laneNumbers[1]>0) laneNumbers[1]--; //South Lane
+						try {
+							Thread.sleep(500);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+				else if(state == 1){
+					//East & West go, North & South stop
+					while(System.currentTimeMillis() - loopStart < laneDecSleep){
+						if(laneNumbers[2]>0) laneNumbers[2]--; //East Lane
+						if(laneNumbers[3]>0) laneNumbers[3]--; //West Lane
+						try {
+							Thread.sleep(500);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+				else if (state == 2){
+					//North & South turn right, East & West turn left
+					while(System.currentTimeMillis() - loopStart < laneDecSleep){
+						if(laneNumbers[0]>0) laneNumbers[0]--; //North Lane
+						if(laneNumbers[1]>0) laneNumbers[1]--; //South Lane
+						if(laneNumbers[2]>0) laneNumbers[2]--; //East Lane
+						if(laneNumbers[3]>0) laneNumbers[3]--; //West Lane
+						try {
+							Thread.sleep(500);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+				else if (state == 3){
+					//East & West turn right, North & South turn left
+					while(System.currentTimeMillis() - loopStart < laneDecSleep){
+						if(laneNumbers[0]>0) laneNumbers[0]--; //North Lane
+						if(laneNumbers[1]>0) laneNumbers[1]--; //South Lane
+						if(laneNumbers[2]>0) laneNumbers[2]--; //East Lane
+						if(laneNumbers[3]>0) laneNumbers[3]--; //West Lane
+						try {
+							Thread.sleep(500);
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+				else{
+					//error - no more states to consider
 				}
 			}
 		}
