@@ -21,6 +21,10 @@ public class Classifier {
 		return fitness;
 	}
 	
+	public String getCondition() {
+		return condition;
+	}
+	
 	public void setFitness(double fitness) {
 		this.fitness = fitness;
 	}

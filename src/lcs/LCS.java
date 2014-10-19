@@ -1,147 +1,255 @@
 package lcs;
+
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
-
 
 public class LCS {
 
 	private Random randomGenerator;
 	private ArrayList<Classifier> classifiers;
 	private ArrayList<Action> actions;
-	
-	boolean alternate = true; //Whether to alternate between exploring and exploring or not. If not, sticks to exploiting
-	int alternateTurn = 0; //What to start with in the alternation, 0 = explore, 1 = exploit
-	int wildcardProb = 30; //Probability that a symbol will be replaced by a wildcard
-	int maxPopulation = 100; //Maximum size of the population. If this is exceeded, classifiers will be removed using roulette wheel selection based on their fitness
-	
+	private ArrayList<Classifier> prevActionSet;
+
+	boolean alternate = true; // Whether to alternate between exploring and
+								// exploring or not. If not, sticks to
+								// exploiting
+	int alternateTurn = 0; // What to start with in the alternation, 0 =
+							// explore, 1 = exploit
+	double wildcardProb = 0.001; // Probability that a symbol will be replaced
+									// by a wildcard
+	int maxPopulation = 100; // Maximum size of the population. If this is
+								// exceeded, classifiers will be removed using
+								// roulette wheel selection based on their
+								// fitness
+	double tau = 0.3; // Multiplication factor to reduce rules in match set but
+						// not in action set, [0,1)
+	double beta = 0.3; // Multiplication factor to reduce rules in action set,
+						// [0,1). Same factor used to reduce reward
+	double gamma = 0.5; // Discount factor for distribution of fitness
+						// subtracted to previous action set
+	int matingPoolSize = 10; // Size of pool of parents for genetic algorithm to
+								// run on
+
 	public LCS(ArrayList<Action> actions) {
 		this.classifiers = new ArrayList<Classifier>();
 		this.actions = actions;
 		this.randomGenerator = new Random();
-		
+
 	}
-	
+
 	public Action input(String input) {
 		ArrayList<Classifier> matchSet = new ArrayList<Classifier>();
-		for(Classifier classifier : classifiers) {
-			if(classifier.isMatching(input)) {
+		for (Classifier classifier : classifiers) {
+			if (classifier.isMatching(input)) {
 				matchSet.add(classifier);
 			}
 		}
-	
-		if(matchSet.size() > 0) { //Do action selection (exploit and explore)
+
+		if (matchSet.size() > 0) { // Do action selection (exploit and explore)
 			return actionSelection(matchSet);
-		}
-		else {
+		} else {
 			return cover(input);
 		}
 	}
-	
+
 	private Action cover(String input) {
-		//Adding wildcards
-		StringBuffer buffer = new StringBuffer(input.length());
-	    for (int i = 0; i < input.length(); i++) {
-	    	int rndInt = randomGenerator.nextInt(100);
-	    	if(rndInt < wildcardProb) {
-	    		buffer.append(".");
-	    	}
-	    	else {
-	    		buffer.append(input.charAt(i));
-	    	}
-	    }
+		// Adding wildcards
+		String condition = mutate(input);
 		Action randomAction = getRandomAction();
-		Classifier classifier = new Classifier(buffer.toString(), randomAction);
+		Classifier classifier = new Classifier(condition, randomAction);
 		addClassifier(classifier);
 		return randomAction;
 	}
-	
-	
+
 	private void addClassifier(Classifier newClassifier) {
-		if(classifiers.size() >= maxPopulation) {
-			double sumFit = 0.0;
-			for(Classifier classifier : classifiers) {
-				sumFit += classifier.getFitness();
-			}
-			
-			//Roulette wheel selection for inverse fitness. Could probably be done a lot better
-			int probSize = maxPopulation*100;
-			Classifier[] probArray = new Classifier[probSize];
-			int start = 0;
-			int end = -1;
-			for(Classifier classifier : classifiers) {
-				double invFit = 1/classifier.getFitness();
-				double prob = invFit/sumFit;
-				start = end+1;
-				end = (int) (start+prob*probSize)-1;
-				for(int i = start; i<=end; i++) {
-					probArray[i] = classifier;
-				}
-			}
-			int rndClassifierIndex = randomGenerator.nextInt(end+1);
-			Classifier toDelete = probArray[rndClassifierIndex];			
+		if (classifiers.size() >= maxPopulation) {
+			Classifier toDelete = rouletteSelection(1, true).get(0);
 			classifiers.remove(toDelete);
-			
-			
 		}
 		classifiers.add(newClassifier);
 	}
-	
+
 	private Action actionSelection(ArrayList<Classifier> matchSet) {
-		//Explore
-		if(alternate && alternateTurn == 0) { 
+		// Explore
+		if (alternate && alternateTurn == 0) {
 			int rndMatchIndex = randomGenerator.nextInt(matchSet.size());
 			Classifier rndMatch = matchSet.get(rndMatchIndex);
 			alternateTurn = 1;
 			return rndMatch.getAction();
 		}
-		
-		//Exploit
+
+		// Exploit
 		HashMap<Action, Double> prediction = new HashMap<Action, Double>();
-		//Generating prediction array
-		for(Classifier match : matchSet) {
+		// Generating prediction array
+		for (Classifier match : matchSet) {
 			Action action = match.getAction();
 			Double sum = 0.0;
-			if(prediction.containsKey(action)) {
+			if (prediction.containsKey(action)) {
 				sum = prediction.get(action);
 			}
 			sum += match.getFitness();
 			prediction.put(action, sum);
 		}
-		
-		//Finding largest value
+
+		// Finding largest value
 		Map.Entry<Action, Double> maxEntry = null;
-		for (Map.Entry<Action, Double> entry : prediction.entrySet())
-		{
-		    if (maxEntry == null || entry.getValue().compareTo(maxEntry.getValue()) > 0)
-		    {
-		        maxEntry = entry;
-		    }
+		for (Map.Entry<Action, Double> entry : prediction.entrySet()) {
+			if (maxEntry == null
+					|| entry.getValue().compareTo(maxEntry.getValue()) > 0) {
+				maxEntry = entry;
+			}
 		}
-		
+
 		alternateTurn = 0;
 		return maxEntry.getKey();
 	}
-	
+
 	private Action getRandomAction() {
 		int rndActionIndex = randomGenerator.nextInt(actions.size());
 		return actions.get(rndActionIndex);
 	}
-	
+
+	// Using implicit bucket brigade (See
+	// http://www.victormontielargaiz.net/Projects/EvolutionaryComputing/Learning_Classifier_Systems.pdf)
 	public void updateFitness(String input, Action action, double reward) {
 		ArrayList<Classifier> actionSet = new ArrayList<Classifier>();
-		for(Classifier classifier : classifiers) {
-			if(classifier.isMatching(input) && classifier.getAction().equals(action)) {
+		double redistFit = 0.0;
+		// Collect action set and reduce fitness for current match set
+		for (Classifier classifier : classifiers) {
+			double fitness = classifier.getFitness();
+			if (classifier.isMatching(input)
+					&& classifier.getAction().equals(action)) {
+				redistFit += beta * fitness;
+				fitness = (1 - beta) * fitness;
 				actionSet.add(classifier);
+			} else {
+				fitness = tau * fitness;
 			}
-		}		
-		
-		//Do some fitness updates here
-	
-		
-		
+			classifier.setFitness(fitness);
+		}
+
+		// Update previous action set fitness
+		redistFit = gamma * (redistFit / prevActionSet.size());
+		for (Classifier classifier : prevActionSet) {
+			classifier.setFitness(classifier.getFitness() + redistFit);
+		}
+
+		// Reward current action set
+		double individualReward = beta * (reward / actionSet.size());
+		for (Classifier classifier : actionSet) {
+			classifier.setFitness(classifier.getFitness() + individualReward);
+		}
+
+		prevActionSet = actionSet;
 	}
-	
-	
+
+	// Genetic algorithm follows 3.2 and 3.3 here:
+	// ftp://ftp.dca.fee.unicamp.br/pub/docs/ea072/classifier.pdf
+	void geneticAlgorithm() {
+		ArrayList<Classifier> matingPool = rouletteSelection(matingPoolSize,
+				false);
+		ArrayList<Classifier> children = new ArrayList<Classifier>();
+		while (matingPool.size() > 1) {
+			int index1 = randomGenerator.nextInt(matingPool.size());
+			int index2 = randomGenerator.nextInt(matingPool.size());
+			while (index1 == index2) {
+				index2 = randomGenerator.nextInt(matingPool.size());
+			}
+			Classifier mate1 = matingPool.get(index1);
+			Classifier mate2 = matingPool.get(index2);
+			Classifier child = mate(mate1, mate2);
+			children.add(child);
+			matingPool.remove(index1);
+			matingPool.remove(index2);
+		}
+
+	}
+
+	Classifier mate(Classifier c1, Classifier c2) {
+		String condition = crossover(c1.getCondition(), c2.getCondition());
+		condition = mutate(condition);
+		String bitAction = crossover(c1.getAction().getBitRepresentation(), c2
+				.getAction().getBitRepresentation());
+		Action selectedAction = null;
+		for (Action a : actions) {
+			if (a.getBitRepresentation().equals(bitAction)) {
+				selectedAction = a;
+				break;
+			}
+		}
+		if (selectedAction == null) { // Choose random action between the two
+										// mates
+			int rnd = randomGenerator.nextInt(2);
+			if (rnd == 0) {
+				selectedAction = c1.getAction();
+			} else {
+				selectedAction = c2.getAction();
+			}
+		}
+		return new Classifier(condition, selectedAction);
+
+	}
+
+	String crossover(String s1, String s2) {
+		int i = randomGenerator.nextInt(s1.length() - 1);
+		return s1.substring(0, i - 1) + s2.substring(i, s2.length() - 1);
+	}
+
+	String mutate(String input) {
+		StringBuffer buffer = new StringBuffer(input.length());
+		for (int i = 0; i < input.length(); i++) {
+			if (input.charAt(i) != ','
+					&& randomGenerator.nextDouble() < wildcardProb) {
+				buffer.append(".");
+			} else {
+				buffer.append(input.charAt(i));
+			}
+		}
+		return input;
+	}
+
+	ArrayList<Classifier> rouletteSelection(int numSel, boolean inverse) {
+
+		/*
+		 * Code based on
+		 * https://github.com/dwdyer/watchmaker/blob/master/framework/src/java/main/org/uncommons/watchmaker/framework/selection/RouletteWheelSelection.java 
+		 * Copyright 2006-2010 Daniel W. Dyer 
+		 * 
+		 * Licensed under the Apache License, Version 2.0 (the "License");
+		 * 
+		 * Altered to fit our usage
+		 */
+		double[] cumFit = new double[classifiers.size()];
+		if (inverse) {
+			cumFit[0] = 1 - classifiers.get(0).getFitness();
+		} else {
+			cumFit[0] = classifiers.get(0).getFitness();
+		}
+		for (int i = 1; i < classifiers.size(); i++) {
+			double fitness;
+			if (inverse) {
+				fitness = 1 - classifiers.get(i).getFitness();
+			} else {
+				fitness = classifiers.get(i).getFitness();
+			}
+			cumFit[i] = cumFit[i - 1] + fitness;
+		}
+
+		ArrayList<Classifier> selection = new ArrayList<Classifier>(numSel);
+		for (int i = 0; i < numSel; i++) {
+			double randomFitness = randomGenerator.nextDouble()
+					* cumFit[cumFit.length - 1];
+			int index = Arrays.binarySearch(cumFit, randomFitness);
+			if (index < 0) {
+				index = Math.abs(index + 1);
+			}
+			selection.add(classifiers.get(index));
+		}
+		return selection;
+
+	}
+
 }

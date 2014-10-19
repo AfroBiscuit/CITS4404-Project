@@ -2,6 +2,8 @@ package lcs;
 
 public interface Action {
 	
-	public void performAction();
+	public String getBitRepresentation();
+	
+	public void performAction(Object o);
 
 }
