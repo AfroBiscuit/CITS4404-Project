@@ -12,6 +12,8 @@ public class LCS {
 	private ArrayList<Classifier> classifiers;
 	private ArrayList<Action> actions;
 	private ArrayList<Classifier> prevActionSet;
+	private String curInput = "";
+	private Action curAction = null;
 
 	boolean alternate = true; // Whether to alternate between exploring and
 								// exploring or not. If not, sticks to
@@ -40,19 +42,25 @@ public class LCS {
 
 	}
 
-	public Action input(String input) {
+	public Action input(String input) throws Exception {
+		if(this.curAction != null) {
+			throw new Exception("Inputting new data without updating fitness!");
+		}
+		Action action;
 		ArrayList<Classifier> matchSet = new ArrayList<Classifier>();
 		for (Classifier classifier : classifiers) {
 			if (classifier.isMatching(input)) {
 				matchSet.add(classifier);
 			}
 		}
-
 		if (matchSet.size() > 0) { // Do action selection (exploit and explore)
-			return actionSelection(matchSet);
+			action = actionSelection(matchSet);
 		} else {
-			return cover(input);
+			action = cover(input);
 		}
+		this.curAction = action;
+		this.curInput = input;
+		return action;
 	}
 
 	private Action cover(String input) {
@@ -114,14 +122,17 @@ public class LCS {
 
 	// Using implicit bucket brigade (See
 	// http://www.victormontielargaiz.net/Projects/EvolutionaryComputing/Learning_Classifier_Systems.pdf)
-	public void updateFitness(String input, Action action, double reward) {
+	public void updateFitness(double reward) throws Exception {
+		if(curAction == null) {
+			throw new Exception("Update fitness run without running LCS");
+		}
 		ArrayList<Classifier> actionSet = new ArrayList<Classifier>();
 		double redistFit = 0.0;
 		// Collect action set and reduce fitness for current match set
 		for (Classifier classifier : classifiers) {
 			double fitness = classifier.getFitness();
-			if (classifier.isMatching(input)
-					&& classifier.getAction().equals(action)) {
+			if (classifier.isMatching(curInput)
+					&& classifier.getAction().equals(curAction)) {
 				redistFit += beta * fitness;
 				fitness = (1 - beta) * fitness;
 				actionSet.add(classifier);
@@ -142,13 +153,19 @@ public class LCS {
 		for (Classifier classifier : actionSet) {
 			classifier.setFitness(classifier.getFitness() + individualReward);
 		}
-
+		
 		prevActionSet = actionSet;
+		curAction = null;
+		curInput = "";
 	}
 
 	// Genetic algorithm follows 3.2 and 3.3 here:
 	// ftp://ftp.dca.fee.unicamp.br/pub/docs/ea072/classifier.pdf
-	void geneticAlgorithm() {
+	public void runGA() {
+		geneticAlgorithm();
+	}
+	
+	private void geneticAlgorithm() {
 		ArrayList<Classifier> matingPool = rouletteSelection(matingPoolSize,
 				false);
 		ArrayList<Classifier> children = new ArrayList<Classifier>();
@@ -193,12 +210,12 @@ public class LCS {
 
 	}
 
-	String crossover(String s1, String s2) {
+	private String crossover(String s1, String s2) {
 		int i = randomGenerator.nextInt(s1.length() - 1);
 		return s1.substring(0, i - 1) + s2.substring(i, s2.length() - 1);
 	}
 
-	String mutate(String input) {
+	private String mutate(String input) {
 		StringBuffer buffer = new StringBuffer(input.length());
 		for (int i = 0; i < input.length(); i++) {
 			if (input.charAt(i) != ','
@@ -211,7 +228,7 @@ public class LCS {
 		return input;
 	}
 
-	ArrayList<Classifier> rouletteSelection(int numSel, boolean inverse) {
+	private ArrayList<Classifier> rouletteSelection(int numSel, boolean inverse) {
 
 		/*
 		 * Code based on
