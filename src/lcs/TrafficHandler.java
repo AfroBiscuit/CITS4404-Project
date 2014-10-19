@@ -75,7 +75,7 @@ public class TrafficHandler {
 		return laneNorth;
 	}
 	
-	public int getNSouth(){
+	public int getSouth(){
 		laneSouth = laneNumbers[1];
 		return laneSouth;
 	}
@@ -95,7 +95,18 @@ public class TrafficHandler {
 		ignoreLanes[1] = second;
 	}
 	
-	
+	public String queueLength(){
+		StringBuilder queue = new StringBuilder();
+		queue.append(getNorth());
+		queue.append(",");
+		queue.append(getSouth());
+		queue.append(",");
+		queue.append(getEast());
+		queue.append(",");
+		queue.append(getWest());
+		
+		return queue.toString();
+	}
 	
 	private class LaneIncrement extends Thread{
 		//variables
