@@ -107,6 +107,20 @@ public class TrafficHandler4Case {
 			//chuck an error
 		}
 	}
+	
+	public String queueLength(int light){
+		StringBuilder queue = new StringBuilder();
+		queue.append(laneNumbers[4*light]);
+		queue.append(",");
+		queue.append(laneNumbers[4*light+1]);
+		queue.append(",");
+		queue.append(laneNumbers[4*light+2]);
+		queue.append(",");
+		queue.append(laneNumbers[4*light+3]);
+		
+		return queue.toString();
+	}
+	
 	//PRIVATE CLASSES BELOW FOR EACH TRAFFIC LIGHT
 	private class LaneIncrement1 extends Thread{
 		//variables
@@ -163,7 +177,7 @@ public class TrafficHandler4Case {
 					laneNumbers[lanePick]++;
 					
 				}
-				//if((System.currentTimeMillis() - startTime)%500 <= 50) System.out.println("N: " + laneNumbers[0] + " S: " + laneNumbers[1] + " E: " + laneNumbers[2] + " W: " + laneNumbers[3] + " " + (System.currentTimeMillis() - startTime));
+				/*if((System.currentTimeMillis() - startTime)%500 <= 50)*/ System.out.println(queueLength(0) + " " + state1 + " " + lanePick + "\n" + queueLength(1) + " " + state2 + "\n"+ queueLength(2) + " " + state3 + "\n"+ queueLength(3) + " " + state4 + "\n");
 				
 				try {
 					Thread.sleep(laneIncSleep);
@@ -220,9 +234,9 @@ public class TrafficHandler4Case {
 				if(state1 == 0){
 					//North & South go, East & West stop
 					while(System.currentTimeMillis() - loopStart < laneDecSleep){
-						if(laneNumbers[0]>0) laneNumbers[0]--; //North Lane
-						if(laneNumbers[1]>0){
-							laneNumbers[1]--; //South Lane
+						if(laneNumbers[1]>0) laneNumbers[1]--; //North Lane
+						if(laneNumbers[0]>0){
+							laneNumbers[0]--; //South Lane
 							laneNumbers[8]++;
 						}
 						try {
@@ -251,7 +265,7 @@ public class TrafficHandler4Case {
 				}
 				else if (state1 == 2){
 					//North & South turn right, East & West turn left
-					while(System.currentTimeMillis() - loopStart < laneDecSleep){
+					while(System.currentTimeMillis() - (loopStart+7500) < laneDecSleep){
 						if(laneNumbers[0]>0) laneNumbers[0]--; //North Lane
 						if(laneNumbers[1]>0){
 							laneNumbers[1]--; //South Lane
@@ -272,7 +286,7 @@ public class TrafficHandler4Case {
 				}
 				else if (state1 == 3){
 					//East & West turn right, North & South turn left
-					while(System.currentTimeMillis() - loopStart < laneDecSleep){
+					while(System.currentTimeMillis() - (loopStart+7500) < laneDecSleep){
 						if(laneNumbers[0]>0){
 							laneNumbers[0]--; //North Lane
 							laneNumbers[7]++;
@@ -408,9 +422,9 @@ public class TrafficHandler4Case {
 				if(state2 == 0){
 					//North & South go, East & West stop
 					while(System.currentTimeMillis() - loopStart < laneDecSleep){
-						if(laneNumbers[4]>0) laneNumbers[4]--; //North Lane
-						if(laneNumbers[5]>0){
-							laneNumbers[5]--; //South Lane
+						if(laneNumbers[5]>0) laneNumbers[5]--; //North Lane
+						if(laneNumbers[4]>0){
+							laneNumbers[4]--; //South Lane
 							laneNumbers[12]++;
 						}
 						try {
@@ -439,7 +453,7 @@ public class TrafficHandler4Case {
 				}
 				else if (state2 == 2){
 					//North & South turn right, East & West turn left
-					while(System.currentTimeMillis() - loopStart < laneDecSleep){
+					while(System.currentTimeMillis() - (loopStart+7500) < laneDecSleep){
 						if(laneNumbers[4]>0){
 							laneNumbers[4]--; //North Lane
 							laneNumbers[2]++;
@@ -460,7 +474,7 @@ public class TrafficHandler4Case {
 				}
 				else if (state2 == 3){
 					//East & West turn right, North & South turn left
-					while(System.currentTimeMillis() - loopStart < laneDecSleep){
+					while(System.currentTimeMillis() - (loopStart+7500) < laneDecSleep){
 						if(laneNumbers[4]>0) laneNumbers[4]--; //North Lane
 						if(laneNumbers[5]>0){
 							laneNumbers[5]--; //South Lane
@@ -596,11 +610,11 @@ public class TrafficHandler4Case {
 				if(state3 == 0){
 					//North & South go, East & West stop
 					while(System.currentTimeMillis() - loopStart < laneDecSleep){
-						if(laneNumbers[8]>0){
-							laneNumbers[8]--; //North Lane
+						if(laneNumbers[9]>0){
+							laneNumbers[9]--; //North Lane
 							laneNumbers[1]++;
 						}
-						if(laneNumbers[9]>0) laneNumbers[9]--; //South Lane
+						if(laneNumbers[8]>0) laneNumbers[8]--; //South Lane
 						try {
 							Thread.sleep(500);
 						} catch (InterruptedException e) {
@@ -627,7 +641,7 @@ public class TrafficHandler4Case {
 				}
 				else if (state3 == 2){
 					//North & South turn right, East & West turn left
-					while(System.currentTimeMillis() - loopStart < laneDecSleep){
+					while(System.currentTimeMillis() - (loopStart+7500) < laneDecSleep){
 						if(laneNumbers[8]>0) laneNumbers[8]--; //North Lane
 						if(laneNumbers[9]>0){
 							laneNumbers[9]--; //South Lane
@@ -648,7 +662,7 @@ public class TrafficHandler4Case {
 				}
 				else if (state3 == 3){
 					//East & West turn right, North & South turn left
-					while(System.currentTimeMillis() - loopStart < laneDecSleep){
+					while(System.currentTimeMillis() - (loopStart+7500) < laneDecSleep){
 						if(laneNumbers[8]>0){
 							laneNumbers[8]--; //North Lane
 							laneNumbers[15]++;
@@ -784,11 +798,11 @@ public class TrafficHandler4Case {
 				if(state4 == 0){
 					//North & South go, East & West stop
 					while(System.currentTimeMillis() - loopStart < laneDecSleep){
-						if(laneNumbers[12]>0){
-							laneNumbers[12]--; //North Lane
+						if(laneNumbers[13]>0){
+							laneNumbers[13]--; //North Lane
 							laneNumbers[5]++;
 						}
-						if(laneNumbers[13]>0) laneNumbers[13]--; //South Lane
+						if(laneNumbers[12]>0) laneNumbers[12]--; //South Lane
 						try {
 							Thread.sleep(500);
 						} catch (InterruptedException e) {
@@ -815,7 +829,7 @@ public class TrafficHandler4Case {
 				}
 				else if (state4 == 2){
 					//North & South turn right, East & West turn left
-					while(System.currentTimeMillis() - loopStart < laneDecSleep){
+					while(System.currentTimeMillis() - (loopStart+7500) < laneDecSleep){
 						if(laneNumbers[12]>0){
 							laneNumbers[12]--; //North Lane
 							laneNumbers[10]++;
@@ -836,7 +850,7 @@ public class TrafficHandler4Case {
 				}
 				else if (state4 == 3){
 					//East & West turn right, North & South turn left
-					while(System.currentTimeMillis() - loopStart < laneDecSleep){
+					while(System.currentTimeMillis() - (loopStart+7500) < laneDecSleep){
 						if(laneNumbers[12]>0) laneNumbers[12]--; //North Lane
 						if(laneNumbers[13]>0){
 							laneNumbers[13]--; //South Lane

@@ -4,8 +4,8 @@ public class Main {
 	public Main(){}
 	
 	public static void main(String args[]){
-		TrafficHandler th = new TrafficHandler();
-		th.trafficLoop();
+		TrafficHandler4Case th = new TrafficHandler4Case();
+		th.runTraffic();
 		return;
 	}
 }
