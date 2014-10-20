@@ -143,11 +143,13 @@ public class LCS {
 		}
 
 		// Update previous action set fitness
-		redistFit = gamma * (redistFit / prevActionSet.size());
-		for (Classifier classifier : prevActionSet) {
-			classifier.setFitness(classifier.getFitness() + redistFit);
+		if(prevActionSet != null) {
+			redistFit = gamma * (redistFit / prevActionSet.size());
+			for (Classifier classifier : prevActionSet) {
+				classifier.setFitness(classifier.getFitness() + redistFit);
+			}
 		}
-
+		
 		// Reward current action set
 		double individualReward = beta * (reward / actionSet.size());
 		for (Classifier classifier : actionSet) {
@@ -181,6 +183,10 @@ public class LCS {
 			children.add(child);
 			matingPool.remove(index1);
 			matingPool.remove(index2);
+		}
+		
+		for(Classifier classifier : children) {
+			addClassifier(classifier);
 		}
 
 	}
