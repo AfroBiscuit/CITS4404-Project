@@ -20,7 +20,7 @@ public class LCS {
 								// exploiting
 	int alternateTurn = 0; // What to start with in the alternation, 0 =
 							// explore, 1 = exploit
-	double wildcardProb = 0.001; // Probability that a symbol will be replaced
+	double wildcardProb = 0.01; // Probability that a symbol will be replaced
 									// by a wildcard
 	int maxPopulation = 100; // Maximum size of the population. If this is
 								// exceeded, classifiers will be removed using
@@ -32,8 +32,8 @@ public class LCS {
 						// [0,1). Same factor used to reduce reward
 	double gamma = 0.5; // Discount factor for distribution of fitness
 						// subtracted to previous action set
-	int matingPoolSize = 10; // Size of pool of parents for genetic algorithm to
-								// run on
+	int matingPoolSize = 4; // Size of pool of parents for genetic algorithm to
+								// run on. Setting it to 0 or 1 effectively disables mating
 
 	public LCS(ArrayList<Action> actions) {
 		this.classifiers = new ArrayList<Classifier>();
@@ -73,6 +73,13 @@ public class LCS {
 	}
 
 	private void addClassifier(Classifier newClassifier) {
+		//Check if the same classifier already exists in the population. If so, do not add it
+		for(Classifier c : classifiers) {
+			if(c.getCondition().equals(newClassifier.getCondition()) && c.getAction().getBitRepresentation().equals(newClassifier.getAction().getBitRepresentation())) {
+				return;
+			}
+		}
+		
 		if (classifiers.size() >= maxPopulation) {
 			Classifier toDelete = rouletteSelection(1, true).get(0);
 			classifiers.remove(toDelete);
@@ -168,7 +175,7 @@ public class LCS {
 	}
 	
 	private void geneticAlgorithm() {
-		ArrayList<Classifier> matingPool = rouletteSelection(matingPoolSize,
+		ArrayList<Classifier> matingPool = rouletteSelection(Math.min(matingPoolSize, classifiers.size()),
 				false);
 		ArrayList<Classifier> children = new ArrayList<Classifier>();
 		while (matingPool.size() > 1) {
@@ -181,8 +188,8 @@ public class LCS {
 			Classifier mate2 = matingPool.get(index2);
 			Classifier child = mate(mate1, mate2);
 			children.add(child);
-			matingPool.remove(index1);
-			matingPool.remove(index2);
+			matingPool.remove(mate1);
+			matingPool.remove(mate2);
 		}
 		
 		for(Classifier classifier : children) {
@@ -217,21 +224,21 @@ public class LCS {
 	}
 
 	private String crossover(String s1, String s2) {
-		int i = randomGenerator.nextInt(s1.length() - 1);
-		return s1.substring(0, i - 1) + s2.substring(i, s2.length() - 1);
+		int i = randomGenerator.nextInt(Math.max(s1.length(),2));
+		return s1.substring(0, i) + s2.substring(i, s2.length());
 	}
 
 	private String mutate(String input) {
 		StringBuffer buffer = new StringBuffer(input.length());
 		for (int i = 0; i < input.length(); i++) {
-			if (input.charAt(i) != ','
-					&& randomGenerator.nextDouble() < wildcardProb) {
+			double rndDouble = randomGenerator.nextDouble();
+			if (input.charAt(i) != ',' && rndDouble < wildcardProb) {
 				buffer.append(".");
 			} else {
 				buffer.append(input.charAt(i));
 			}
 		}
-		return input;
+		return buffer.toString();
 	}
 
 	private ArrayList<Classifier> rouletteSelection(int numSel, boolean inverse) {
@@ -273,6 +280,10 @@ public class LCS {
 		}
 		return selection;
 
+	}
+	
+	public ArrayList<Classifier> getClassifiers() {
+		return this.classifiers;
 	}
 
 }

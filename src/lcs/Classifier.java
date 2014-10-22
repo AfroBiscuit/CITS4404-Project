@@ -26,7 +26,7 @@ public class Classifier {
 	}
 	
 	public void setFitness(double fitness) {
-		this.fitness = fitness;
+		this.fitness = Math.max(fitness, 0.0);
 	}
 	
 	public boolean isMatching(String input) {
