@@ -187,6 +187,8 @@ public class TrafficHandler {
 		}
 		
 		public void loop(int time){
+			Random rand = new Random();
+			int flip = 0;
 			while(System.currentTimeMillis() - startTime < time){
 				long loopStart = System.currentTimeMillis();
 				//simple cyclic traffic light loop
@@ -244,10 +246,14 @@ public class TrafficHandler {
 				else if (state == 2){
 					//North & South turn right, East & West turn left
 					while(System.currentTimeMillis() - loopStart < laneDecSleep){
-						if(laneNumbers[0]>0) laneNumbers[0]--; //North Lane
-						if(laneNumbers[1]>0) laneNumbers[1]--; //South Lane
-						if(laneNumbers[2]>0) laneNumbers[2]--; //East Lane
-						if(laneNumbers[3]>0) laneNumbers[3]--; //West Lane
+						flip = rand.nextInt(4);
+						if(laneNumbers[0]>0 && flip == 1) laneNumbers[0]--; //North Lane
+						flip = rand.nextInt(4);
+						if(laneNumbers[1]>0 && flip == 1) laneNumbers[1]--; //South Lane
+						flip = rand.nextInt(4);
+						if(laneNumbers[2]>0 && flip == 1) laneNumbers[2]--; //East Lane
+						flip = rand.nextInt(4);
+						if(laneNumbers[3]>0 && flip == 1) laneNumbers[3]--; //West Lane
 						try {
 							Thread.sleep(500);
 						} catch (InterruptedException e) {
@@ -259,10 +265,14 @@ public class TrafficHandler {
 				else if (state == 3){
 					//East & West turn right, North & South turn left
 					while(System.currentTimeMillis() - loopStart < laneDecSleep){
-						if(laneNumbers[0]>0) laneNumbers[0]--; //North Lane
-						if(laneNumbers[1]>0) laneNumbers[1]--; //South Lane
-						if(laneNumbers[2]>0) laneNumbers[2]--; //East Lane
-						if(laneNumbers[3]>0) laneNumbers[3]--; //West Lane
+						flip = rand.nextInt(4);
+						if(laneNumbers[0]>0 && flip == 1) laneNumbers[0]--; //North Lane
+						flip = rand.nextInt(4);
+						if(laneNumbers[1]>0 && flip == 1) laneNumbers[1]--; //South Lane
+						flip = rand.nextInt(4);
+						if(laneNumbers[2]>0 && flip == 1) laneNumbers[2]--; //East Lane
+						flip = rand.nextInt(4);
+						if(laneNumbers[3]>0 && flip == 1) laneNumbers[3]--; //West Lane
 						try {
 							Thread.sleep(500);
 						} catch (InterruptedException e) {
