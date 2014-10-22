@@ -20,13 +20,13 @@ public class LCS {
 								// exploiting
 	int alternateTurn = 0; // What to start with in the alternation, 0 =
 							// explore, 1 = exploit
-	double wildcardProb = 0.05; // Probability that a symbol will be replaced
+	double wildcardProb = 0.3; // Probability that a symbol will be replaced
 									// by a wildcard
 	int maxPopulation = 100; // Maximum size of the population. If this is
 								// exceeded, classifiers will be removed using
 								// roulette wheel selection based on their
 								// fitness
-	double tau = 0.3; // Multiplication factor to reduce rules in match set but
+	double tau = 0.2; // Multiplication factor to reduce rules in match set but
 						// not in action set, [0,1)
 	double beta = 0.3; // Multiplication factor to reduce rules in action set,
 						// [0,1). Same factor used to reduce reward
@@ -34,6 +34,8 @@ public class LCS {
 						// subtracted to previous action set
 	int matingPoolSize = 2; // Size of pool of parents for genetic algorithm to
 								// run on. Setting it to 0 or 1 effectively disables mating
+	
+	double minFit = 0.05; //If none of the actions in the prediction array have a fitness above this level, a new rule will be introduced through coverage instead
 
 	public LCS(ArrayList<Action> actions) {
 		this.classifiers = new ArrayList<Classifier>();
@@ -54,7 +56,7 @@ public class LCS {
 			}
 		}
 		if (matchSet.size() > 0) { // Do action selection (exploit and explore)
-			action = actionSelection(matchSet);
+			action = actionSelection(matchSet, input);
 		} else {
 			action = cover(input);
 		}
@@ -87,7 +89,7 @@ public class LCS {
 		classifiers.add(newClassifier);
 	}
 
-	private Action actionSelection(ArrayList<Classifier> matchSet) {
+	private Action actionSelection(ArrayList<Classifier> matchSet, String input) {
 		// Explore
 		if (alternate && alternateTurn == 0) {
 			int rndMatchIndex = randomGenerator.nextInt(matchSet.size());
@@ -112,13 +114,15 @@ public class LCS {
 		// Finding largest value
 		Map.Entry<Action, Double> maxEntry = null;
 		for (Map.Entry<Action, Double> entry : prediction.entrySet()) {
-			if (maxEntry == null
-					|| entry.getValue().compareTo(maxEntry.getValue()) > 0) {
+			if (entry.getValue() > minFit && (maxEntry == null
+					|| entry.getValue().compareTo(maxEntry.getValue()) > 0)) {
 				maxEntry = entry;
 			}
 		}
-
 		alternateTurn = 0;
+		if(maxEntry == null) {
+			return cover(input);
+		}
 		return maxEntry.getKey();
 	}
 
@@ -220,7 +224,12 @@ public class LCS {
 				selectedAction = c2.getAction();
 			}
 		}
-		return new Classifier(condition, selectedAction);
+		
+		Classifier child = new Classifier(condition, selectedAction);
+		child.setFitness(c1.getFitness()/2+c2.getFitness()/2);
+		c1.setFitness(c1.getFitness()/2);
+		c2.setFitness(c2.getFitness()/2);
+		return child;
 
 	}
 
