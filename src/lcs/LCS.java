@@ -20,7 +20,7 @@ public class LCS {
 								// exploiting
 	int alternateTurn = 0; // What to start with in the alternation, 0 =
 							// explore, 1 = exploit
-	double wildcardProb = 0.01; // Probability that a symbol will be replaced
+	double wildcardProb = 0.05; // Probability that a symbol will be replaced
 									// by a wildcard
 	int maxPopulation = 100; // Maximum size of the population. If this is
 								// exceeded, classifiers will be removed using
@@ -32,7 +32,7 @@ public class LCS {
 						// [0,1). Same factor used to reduce reward
 	double gamma = 0.5; // Discount factor for distribution of fitness
 						// subtracted to previous action set
-	int matingPoolSize = 4; // Size of pool of parents for genetic algorithm to
+	int matingPoolSize = 2; // Size of pool of parents for genetic algorithm to
 								// run on. Setting it to 0 or 1 effectively disables mating
 
 	public LCS(ArrayList<Action> actions) {
@@ -137,16 +137,17 @@ public class LCS {
 		double redistFit = 0.0;
 		// Collect action set and reduce fitness for current match set
 		for (Classifier classifier : classifiers) {
-			double fitness = classifier.getFitness();
-			if (classifier.isMatching(curInput)
-					&& classifier.getAction().equals(curAction)) {
-				redistFit += beta * fitness;
-				fitness = (1 - beta) * fitness;
-				actionSet.add(classifier);
-			} else {
-				fitness = tau * fitness;
+			if(classifier.isMatching(curInput)) {
+				double fitness = classifier.getFitness();
+				if (classifier.getAction().equals(curAction)) {
+					redistFit += beta * fitness;
+					fitness = (1 - beta) * fitness;
+					actionSet.add(classifier);
+				} else {
+					fitness = tau * fitness;
+				}
+				classifier.setFitness(fitness);
 			}
-			classifier.setFitness(fitness);
 		}
 
 		// Update previous action set fitness
