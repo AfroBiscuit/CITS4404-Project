@@ -59,15 +59,15 @@ public class TrafficHandler {
 	//threads needed for good simulation
 	
 	public void highTraffic(int lane){
-		prob = 10;
+		prob = 20;
 	}
 	
 	public void medTraffic(int lane){
-		prob = 30;
+		prob = 50;
 	}
 	
 	public void lowTraffic(int lane){
-		prob = 50;
+		prob = 70;
 	}
 	
 	public int getNorth(){
@@ -153,15 +153,18 @@ public class TrafficHandler {
 				//calculate whether a car joins a lane, and pick which lane
 				int lanePick = rand.nextInt((3) + 1);
 				while(Arrays.asList(ignoreLanes).contains(lanePick)){ //skip lanes that do not have random cars added to them
+					//System.out.println("Rejected: " + lanePick);
 					lanePick = rand.nextInt((3) + 1);
+					
 				}
 				int probToJoin = rand.nextInt((100) + 1);
 				
 				if (probToJoin >= prob){
 					laneNumbers[lanePick]++;
+					//System.out.println("Added to: " + lanePick);
 					
 				}
-				if((System.currentTimeMillis() - startTime)%500 <= 50) System.out.println("N: " + laneNumbers[0] + " S: " + laneNumbers[1] + " E: " + laneNumbers[2] + " W: " + laneNumbers[3] + " " + state);
+				//if((System.currentTimeMillis() - startTime)%500 <= 50) System.out.println("N: " + laneNumbers[0] + " S: " + laneNumbers[1] + " E: " + laneNumbers[2] + " W: " + laneNumbers[3] + " " + state);
 				
 				try {
 					Thread.sleep(laneIncSleep);
