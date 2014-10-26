@@ -41,8 +41,8 @@ public class MainLCS {
 
 	}
 
-	private static String prefixZeroes(int i, int length) {
-		String iStr = Integer.toString(i);
+	private static String prefixZeroes(String iStr, int length) {
+		//String iStr = Integer.toString(i);
 		if (iStr.length() >= length) {
 			return iStr.substring(iStr.length() - length);
 		} else {
@@ -156,12 +156,15 @@ public class MainLCS {
 					LCS lcs = new LCS(actions);
 					String input = tf.queueLength();
 					String[] queuesStr = input.split(",");
+					String inStr = null;
+					for(String i : queuesStr) inStr = inStr + prefixZeroes(i, 4) + ",";
+					inStr = inStr.replace("null", "");
 					//calculate a reward
 					double totalQueue = Double.parseDouble(queuesStr[0]) + Double.parseDouble(queuesStr[1]) 
 							+ Double.parseDouble(queuesStr[2]) + Double.parseDouble(queuesStr[3]); 
 					double aveQueue = totalQueue/4.0;
 					if (aveQueue < 1.0) aveQueue = 1.0;
-					Action a = lcs.input(input);
+					Action a = lcs.input(inStr);
 					if((System.currentTimeMillis() - startTime)%500 <= 50)System.out.println(a.getBitRepresentation());
 					if((System.currentTimeMillis() - startTime)%500 <= 50)System.out.println(input + " " + tf.state);
 					a.performAction(tf);
