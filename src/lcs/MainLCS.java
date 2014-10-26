@@ -3,11 +3,15 @@ package lcs;
 import java.util.ArrayList;
 import java.util.Random;
 
+import java.io.FileWriter;
+import java.io.IOException;
+
 public class MainLCS {
 	
 	public MainLCS(){}
 	
 	//static boolean tfrRunning;
+	static String fileLoc = "G:\\LCSTestCSV\\lcs.csv";
 	
 	public static void main(String args[]) {
 		
@@ -28,6 +32,20 @@ public class MainLCS {
 		actions.add(new TestActionC());
 		actions.add(new TestActionD());
 		
+		try
+		{
+		    FileWriter writer = new FileWriter(fileLoc);
+	 
+		    writer.append("North,South,East,West,Run Time,State,Fitness");
+		    writer.append('\n');
+	 
+		    writer.flush();
+		    writer.close();
+		}
+		catch(IOException e)
+		{
+		     e.printStackTrace();
+		}
 		
 		TrafficHandler tf = new TrafficHandler();
 		runTF tfr = new runTF(tf);
@@ -39,6 +57,25 @@ public class MainLCS {
 
 
 
+	}
+	
+	//following from http://www.mkyong.com/java/how-to-export-data-to-csv-file-java/
+	private static void generateCSVFile(String sFileName, String data)
+	   {
+		try
+		{
+		    FileWriter writer = new FileWriter(sFileName, true);
+	 
+		    writer.append(data);
+		    writer.append('\n');
+	 
+		    writer.flush();
+		    writer.close();
+		}
+		catch(IOException e)
+		{
+		     e.printStackTrace();
+		} 
 	}
 
 	private static String prefixZeroes(String iStr, int length) {
@@ -110,7 +147,7 @@ public class MainLCS {
 		
 		@Override
 		public String getBitRepresentation() {
-			return "C";
+			return "D";
 		}
 
 		@Override
@@ -152,7 +189,7 @@ public class MainLCS {
 				//int rounds = 1000;
 				//for (int k = 0; k < rounds; k++) {
 				long startTime = System.currentTimeMillis();
-				while(true){
+				while(System.currentTimeMillis() - startTime <=720000){
 					LCS lcs = new LCS(actions);
 					String input = tf.queueLength();
 					String[] queuesStr = input.split(",");
@@ -165,17 +202,22 @@ public class MainLCS {
 					double aveQueue = totalQueue/4.0;
 					if (aveQueue < 1.0) aveQueue = 1.0;
 					Action a = lcs.input(inStr);
-					if((System.currentTimeMillis() - startTime)%500 <= 50)System.out.println(a.getBitRepresentation());
-					if((System.currentTimeMillis() - startTime)%500 <= 50)System.out.println(input + " " + tf.state);
+					if(System.currentTimeMillis()%500 == 0)System.out.println(a.getBitRepresentation());
+					if(System.currentTimeMillis()%500 == 0)System.out.println(input + " " + tf.state + " " + System.currentTimeMillis());
 					a.performAction(tf);
 					double fitness = 1.0/aveQueue;
 					lcs.updateFitness(fitness);
 					lcs.runGA();
+					
+					double outFit = 0.0;
 					for (Classifier c : lcs.getClassifiers()) {
-						if((System.currentTimeMillis() - startTime)%500 <= 50)System.out.println(c.getCondition() + ": "
+						if(System.currentTimeMillis()%500 == 0)System.out.println(c.getCondition() + ": "
 								+ c.getAction().getBitRepresentation() + "= "
 								+ c.getFitness());
+						outFit = c.getFitness();
 					}
+					input = input + "," + (System.currentTimeMillis() - startTime) + "," + tf.state + "," + outFit;
+					if(System.currentTimeMillis()%500 == 0) generateCSVFile(fileLoc, input);
 				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
