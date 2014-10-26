@@ -189,6 +189,7 @@ public class MainLCS {
 				//int rounds = 1000;
 				//for (int k = 0; k < rounds; k++) {
 				long startTime = System.currentTimeMillis();
+				long prevTime = 0;
 				while(System.currentTimeMillis() - startTime <=720000){
 					LCS lcs = new LCS(actions);
 					String input = tf.queueLength();
@@ -217,7 +218,10 @@ public class MainLCS {
 						outFit = c.getFitness();
 					}
 					input = input + "," + (System.currentTimeMillis() - startTime) + "," + tf.state + "," + outFit;
-					if(System.currentTimeMillis()%500 == 0) generateCSVFile(fileLoc, input);
+					if(System.currentTimeMillis()%500 == 0 && (System.currentTimeMillis() - startTime) != prevTime){
+						generateCSVFile(fileLoc, input);
+						prevTime = (System.currentTimeMillis() - startTime);
+					}
 				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
