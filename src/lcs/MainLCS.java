@@ -20,75 +20,17 @@ public class MainLCS {
 		ArrayList<Action> actions = new ArrayList<Action>();
 		actions.add(new TestActionA());
 		actions.add(new TestActionB());
+		actions.add(new TestActionC());
+		actions.add(new TestActionD());
+		
+		TrafficHandler tf = new TrafficHandler();
+		runTF tfr = new runTF(tf);
+		runLCS rlcs = new runLCS(actions, tf);
+		
+		tfr.start();
+		rlcs.start();
 
-		try {
-			int rounds = 1000;
-			int minCorrect = 200;
-			int maxCorrect = 0;
-			int sumCorrect = 0;
-			for (int k = 0; k < rounds; k++) {
-				LCS lcs = new LCS(actions);
-				int correct = 0;
-				/*
-				 * lcs.input("000."); lcs.updateFitness(0.5); lcs.input("00.0");
-				 * lcs.updateFitness(0.5); lcs.runGA();
-				 */
-				int[] numbers = new int[200];
-				for (int i = 0; i < 200; i++) {
-					numbers[i] = i;
-				}
 
-				shuffleArray(numbers);
-
-				for (int i = 0; i < 200; i++) {
-					String iStr = prefixZeroes(numbers[i], 4);
-					String input = iStr;
-					for (int j = 0; j < 1; j++) {
-
-						// System.out.println(input);
-						Action a = lcs.input(input);
-						System.out.println(a.getBitRepresentation());
-						double fitness;
-						if (a.getBitRepresentation().equals("A")) {
-							if (i < 100) {
-								correct++;
-								fitness = 1;
-							} else {
-								fitness = 0;
-							}
-						} else {
-							if (i < 100) {
-								fitness = 0;
-							} else {
-								correct++;
-								fitness = 1;
-							}
-						}
-						lcs.updateFitness(fitness);
-						lcs.runGA();
-					}
-					System.out.println("Round " + iStr);
-					for (Classifier c : lcs.getClassifiers()) {
-						System.out.println(c.getCondition() + ": "
-								+ c.getAction().getBitRepresentation() + "= "
-								+ c.getFitness());
-					}
-
-				}
-				System.out.println("Correct: " + correct);
-				minCorrect = Math.min(minCorrect, correct);
-				maxCorrect = Math.max(maxCorrect, correct);
-				sumCorrect += correct;
-			}
-			System.out.println("Average number of correct actions over "
-					+ rounds + " rounds:");
-			System.out.println(sumCorrect / rounds);
-			System.out.println("Min. correct: "+minCorrect);
-			System.out.println("Max. correct: "+maxCorrect);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 
 	}
 
@@ -106,8 +48,10 @@ public class MainLCS {
 
 	}
 
+	
+	//turn on state 0
 	public static class TestActionA implements Action {
-
+		
 		@Override
 		public String getBitRepresentation() {
 			return "A";
@@ -115,12 +59,14 @@ public class MainLCS {
 
 		@Override
 		public void performAction(Object o) {
-			// TODO Auto-generated method stub
+			((TrafficHandler)o).state = 0;
 
 		}
 
 	}
 
+	
+	//turn on state 1
 	public static class TestActionB implements Action {
 
 		@Override
@@ -130,12 +76,13 @@ public class MainLCS {
 
 		@Override
 		public void performAction(Object o) {
-			// TODO Auto-generated method stub
-
+			((TrafficHandler)o).state = 1;
 		}
 
 	}
 
+	
+	//turn on state 2
 	public static class TestActionC implements Action {
 
 		@Override
@@ -145,21 +92,81 @@ public class MainLCS {
 
 		@Override
 		public void performAction(Object o) {
-			// TODO Auto-generated method stub
-
+			((TrafficHandler)o).state = 2;
 		}
 
 	}
+	
+	
+	//turn on state 3
+	public static class TestActionD implements Action {
+		
+		@Override
+		public String getBitRepresentation() {
+			return "C";
+		}
 
-	public static void shuffleArray(int[] ar) {
-		Random rnd = new Random();
-		for (int i = ar.length - 1; i > 0; i--) {
-			int index = rnd.nextInt(i + 1);
-			// Simple swap
-			int a = ar[index];
-			ar[index] = ar[i];
-			ar[i] = a;
+		@Override
+		public void performAction(Object o) {
+			((TrafficHandler)o).state = 3;
+		}
+		
+	}
+	
+	private static class runTF extends Thread{
+		
+		TrafficHandler tf;
+		
+		private runTF(TrafficHandler tfIN){
+			tf = tfIN;
+		}
+		
+		@Override
+		public void run(){
+			tf.trafficLoop();
+		}
+		
+	}
+	
+	private static class runLCS extends Thread{
+		
+		ArrayList<Action> actions;
+		TrafficHandler tf;
+		
+		private runLCS(ArrayList<Action> actionsIN, TrafficHandler tfIN){
+			actions = actionsIN;
+			tf = tfIN;
+		}
+		
+		@Override
+		public void run(){
+			//consider moving the below to an inner class for threading
+			try {
+				int rounds = 1000;
+				for (int k = 0; k < rounds; k++) {
+					LCS lcs = new LCS(actions);
+						String input = tf.queueLength();
+						String[] queuesStr = input.split(",");
+						//calculate a reward
+						double totalQueue = Double.parseDouble(queuesStr[0]) + Double.parseDouble(queuesStr[1]) 
+								+ Double.parseDouble(queuesStr[2]) + Double.parseDouble(queuesStr[3]); 
+						double aveQueue = totalQueue/4.0;
+						if (aveQueue < 1.0) aveQueue = 1.0;
+							Action a = lcs.input(input);
+							System.out.println(a.getBitRepresentation());							
+							double fitness = 1.0/aveQueue;
+							lcs.updateFitness(fitness);
+							lcs.runGA();
+						for (Classifier c : lcs.getClassifiers()) {
+							System.out.println(c.getCondition() + ": "
+									+ c.getAction().getBitRepresentation() + "= "
+									+ c.getFitness());
+						}
+				}
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 	}
-
 }
