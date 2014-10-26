@@ -11,7 +11,7 @@ public class MainLCS {
 	public MainLCS(){}
 	
 	//static boolean tfrRunning;
-	static String fileLoc = "G:\\LCSTestCSV\\lcs.csv";
+	static String fileLoc = "G:\\LCSTestCSV\\lcs5.csv";
 	
 	public static void main(String args[]) {
 		
@@ -190,7 +190,10 @@ public class MainLCS {
 				//for (int k = 0; k < rounds; k++) {
 				long startTime = System.currentTimeMillis();
 				long prevTime = 0;
+				Random rand = new Random();
 				while(System.currentTimeMillis() - startTime <=720000){
+					int runGA = rand.nextInt(5);
+					int lane = rand.nextInt(2);
 					LCS lcs = new LCS(actions);
 					String input = tf.queueLength();
 					String[] queuesStr = input.split(",");
@@ -201,28 +204,33 @@ public class MainLCS {
 					double totalQueue = Double.parseDouble(queuesStr[0]) + Double.parseDouble(queuesStr[1]) 
 							+ Double.parseDouble(queuesStr[2]) + Double.parseDouble(queuesStr[3]); 
 					double aveQueue = totalQueue/4.0;
+					double tempLen = (Double.parseDouble(queuesStr[lane]) + Double.parseDouble(queuesStr[lane + 2]))/2.0 ;
 					if (aveQueue < 1.0) aveQueue = 1.0;
+					if (tempLen < 1.0) tempLen = 1.0;
 					Action a = lcs.input(inStr);
-					if(System.currentTimeMillis()%500 == 0)System.out.println(a.getBitRepresentation());
-					if(System.currentTimeMillis()%500 == 0)System.out.println(input + " " + tf.state + " " + System.currentTimeMillis());
+					//if(System.currentTimeMillis()%500 == 0)System.out.println(a.getBitRepresentation());
+					
 					a.performAction(tf);
-					double fitness = 1.0/aveQueue;
+					double fitness = 1.0/tempLen;
 					lcs.updateFitness(fitness);
-					lcs.runGA();
+					if (runGA == 1) lcs.runGA();
 					
 					double outFit = 0.0;
 					for (Classifier c : lcs.getClassifiers()) {
-						if(System.currentTimeMillis()%500 == 0)System.out.println(c.getCondition() + ": "
-								+ c.getAction().getBitRepresentation() + "= "
-								+ c.getFitness());
+						//if(System.currentTimeMillis()%500 == 0)System.out.println(c.getCondition() + ": "
+								//+ c.getAction().getBitRepresentation() + "= "
+								//+ c.getFitness());
 						outFit = c.getFitness();
 					}
+					if(System.currentTimeMillis()%500 == 0)System.out.println(input + " " + tf.state + " " + System.currentTimeMillis()
+							+ " " + outFit);
 					input = input + "," + (System.currentTimeMillis() - startTime) + "," + tf.state + "," + outFit;
 					if(System.currentTimeMillis()%500 == 0 && (System.currentTimeMillis() - startTime) != prevTime){
 						generateCSVFile(fileLoc, input);
 						prevTime = (System.currentTimeMillis() - startTime);
 					}
 				}
+				System.out.println("Sim Ended.");
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
