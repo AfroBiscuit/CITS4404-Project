@@ -4,6 +4,11 @@ import java.util.ArrayList;
 import java.util.Random;
 
 public class MainLCS {
+	
+	public MainLCS(){}
+	
+	//static boolean tfrRunning;
+	
 	public static void main(String args[]) {
 		
 		/**
@@ -23,11 +28,13 @@ public class MainLCS {
 		actions.add(new TestActionC());
 		actions.add(new TestActionD());
 		
+		
 		TrafficHandler tf = new TrafficHandler();
 		runTF tfr = new runTF(tf);
 		runLCS rlcs = new runLCS(actions, tf);
 		
 		tfr.start();
+		//System.out.println(tfrRunning);
 		rlcs.start();
 
 
@@ -142,26 +149,30 @@ public class MainLCS {
 		public void run(){
 			//consider moving the below to an inner class for threading
 			try {
-				int rounds = 1000;
-				for (int k = 0; k < rounds; k++) {
+				//int rounds = 1000;
+				//for (int k = 0; k < rounds; k++) {
+				long startTime = System.currentTimeMillis();
+				while(true){
 					LCS lcs = new LCS(actions);
-						String input = tf.queueLength();
-						String[] queuesStr = input.split(",");
-						//calculate a reward
-						double totalQueue = Double.parseDouble(queuesStr[0]) + Double.parseDouble(queuesStr[1]) 
-								+ Double.parseDouble(queuesStr[2]) + Double.parseDouble(queuesStr[3]); 
-						double aveQueue = totalQueue/4.0;
-						if (aveQueue < 1.0) aveQueue = 1.0;
-							Action a = lcs.input(input);
-							System.out.println(a.getBitRepresentation());							
-							double fitness = 1.0/aveQueue;
-							lcs.updateFitness(fitness);
-							lcs.runGA();
-						for (Classifier c : lcs.getClassifiers()) {
-							System.out.println(c.getCondition() + ": "
-									+ c.getAction().getBitRepresentation() + "= "
-									+ c.getFitness());
-						}
+					String input = tf.queueLength();
+					String[] queuesStr = input.split(",");
+					//calculate a reward
+					double totalQueue = Double.parseDouble(queuesStr[0]) + Double.parseDouble(queuesStr[1]) 
+							+ Double.parseDouble(queuesStr[2]) + Double.parseDouble(queuesStr[3]); 
+					double aveQueue = totalQueue/4.0;
+					if (aveQueue < 1.0) aveQueue = 1.0;
+					Action a = lcs.input(input);
+					if((System.currentTimeMillis() - startTime)%500 <= 50)System.out.println(a.getBitRepresentation());
+					if((System.currentTimeMillis() - startTime)%500 <= 50)System.out.println(input + " " + tf.state);
+					a.performAction(tf);
+					double fitness = 1.0/aveQueue;
+					lcs.updateFitness(fitness);
+					lcs.runGA();
+					for (Classifier c : lcs.getClassifiers()) {
+						if((System.currentTimeMillis() - startTime)%500 <= 50)System.out.println(c.getCondition() + ": "
+								+ c.getAction().getBitRepresentation() + "= "
+								+ c.getFitness());
+					}
 				}
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
