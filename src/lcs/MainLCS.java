@@ -11,7 +11,7 @@ public class MainLCS {
 	public MainLCS(){}
 	
 	//static boolean tfrRunning;
-	static String fileLoc = "G:\\LCSTestCSV\\lcs5.csv";
+	static String fileLoc = "G:\\LCSTestCSV\\lcs12.csv";
 	
 	public static void main(String args[]) {
 		
@@ -195,22 +195,27 @@ public class MainLCS {
 					int runGA = rand.nextInt(5);
 					int lane = rand.nextInt(2);
 					LCS lcs = new LCS(actions);
+					//tf.state = lane;
+					if(System.currentTimeMillis()%1000 == 0) tf.state++;
+					if(tf.state == 4) tf.state = 0;
 					String input = tf.queueLength();
-					String[] queuesStr = input.split(",");
+					/*String[] queuesStr = input.split(",");
 					String inStr = null;
 					for(String i : queuesStr) inStr = inStr + prefixZeroes(i, 4) + ",";
 					inStr = inStr.replace("null", "");
 					//calculate a reward
-					double totalQueue = Double.parseDouble(queuesStr[0]) + Double.parseDouble(queuesStr[1]) 
-							+ Double.parseDouble(queuesStr[2]) + Double.parseDouble(queuesStr[3]); 
-					double aveQueue = totalQueue/4.0;
-					double tempLen = (Double.parseDouble(queuesStr[lane]) + Double.parseDouble(queuesStr[lane + 2]))/2.0 ;
-					if (aveQueue < 1.0) aveQueue = 1.0;
-					if (tempLen < 1.0) tempLen = 1.0;
+					//double totalQueue = Double.parseDouble(queuesStr[0]) + Double.parseDouble(queuesStr[1]) 
+							//+ Double.parseDouble(queuesStr[2]) + Double.parseDouble(queuesStr[3]); 
+					//double aveQueue = totalQueue/4.0;
+					//double tempLen = (Double.parseDouble(queuesStr[lane]) + Double.parseDouble(queuesStr[lane + 2]))/2.0 ;
+					//if (aveQueue < 1.0) aveQueue = 1.0;
+					
 					Action a = lcs.input(inStr);
 					//if(System.currentTimeMillis()%500 == 0)System.out.println(a.getBitRepresentation());
 					
 					a.performAction(tf);
+					double tempLen = tf.getLongest();
+					if (tempLen < 1.0) tempLen = 1.0;
 					double fitness = 1.0/tempLen;
 					lcs.updateFitness(fitness);
 					if (runGA == 1) lcs.runGA();
@@ -221,10 +226,9 @@ public class MainLCS {
 								//+ c.getAction().getBitRepresentation() + "= "
 								//+ c.getFitness());
 						outFit = c.getFitness();
-					}
-					if(System.currentTimeMillis()%500 == 0)System.out.println(input + " " + tf.state + " " + System.currentTimeMillis()
-							+ " " + outFit);
-					input = input + "," + (System.currentTimeMillis() - startTime) + "," + tf.state + "," + outFit;
+					}*/
+					if(System.currentTimeMillis()%500 == 0)System.out.println(input + " " + tf.state + " " + System.currentTimeMillis());
+					input = input + "," + (System.currentTimeMillis() - startTime) + "," + tf.state ;
 					if(System.currentTimeMillis()%500 == 0 && (System.currentTimeMillis() - startTime) != prevTime){
 						generateCSVFile(fileLoc, input);
 						prevTime = (System.currentTimeMillis() - startTime);

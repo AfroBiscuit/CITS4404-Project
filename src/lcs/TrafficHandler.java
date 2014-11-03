@@ -108,6 +108,15 @@ public class TrafficHandler {
 		return queue.toString();
 	}
 	
+	public int getLongest(){
+		int max = 0;
+		for(int i = 0; i < laneNumbers.length; i++){
+			if(laneNumbers[i] > max){
+				max = laneNumbers[i];
+			}
+		}
+		return max;
+	}
 	private class LaneIncrement extends Thread{
 		//variables
 		@Override
@@ -118,36 +127,36 @@ public class TrafficHandler {
 			//12am to 5am - low
 			startTime = System.currentTimeMillis();
 			lowTraffic(1);
-			loop(150000);
+			loop(150000, 10);
 			//5am to 7am - medium
 			startTime = System.currentTimeMillis();
 			medTraffic(1);
-			loop(60000);
+			loop(60000, 10);
 			//7am to 10am - high
 			startTime = System.currentTimeMillis();
 			highTraffic(1);
-			loop(90000);
+			loop(90000, 0); //traffic coming in mostly on north lane
 			//10am to 4pm - medium
 			startTime = System.currentTimeMillis();
 			medTraffic(1);
-			loop(180000);
+			loop(180000, 10);
 			//4pm to 6pm - high
 			startTime = System.currentTimeMillis();
 			highTraffic(1);
-			loop(60000);
+			loop(60000, 1); //traffic leaving 'city' mostly on south lane
 			//6pm to 9pm - medium
 			startTime = System.currentTimeMillis();
 			medTraffic(1);
-			loop(90000);
+			loop(90000, 10);
 			//9pm to 12am - low
 			startTime = System.currentTimeMillis();
 			lowTraffic(1);
-			loop(90000);
+			loop(90000, 10);
 			
 			runningInc = false;
 		}
 		
-		public void loop(int time){
+		public void loop(int time, int laneFav){
 			Random rand = new Random();
 			while(System.currentTimeMillis() - startTime < time){
 				//calculate whether a car joins a lane, and pick which lane
@@ -161,6 +170,7 @@ public class TrafficHandler {
 				
 				if (probToJoin >= prob){
 					laneNumbers[lanePick]++;
+					if (lanePick == laneFav) laneNumbers[lanePick] = laneNumbers[lanePick] + 2;
 					//System.out.println("Added to: " + lanePick);
 					
 				}
@@ -226,7 +236,7 @@ public class TrafficHandler {
 						if(laneNumbers[0]>0) laneNumbers[0]--; //North Lane
 						if(laneNumbers[1]>0) laneNumbers[1]--; //South Lane
 						try {
-							Thread.sleep(500);
+							Thread.sleep(100);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -239,7 +249,7 @@ public class TrafficHandler {
 						if(laneNumbers[2]>0) laneNumbers[2]--; //East Lane
 						if(laneNumbers[3]>0) laneNumbers[3]--; //West Lane
 						try {
-							Thread.sleep(500);
+							Thread.sleep(100);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -258,7 +268,7 @@ public class TrafficHandler {
 						flip = rand.nextInt(4);
 						if(laneNumbers[3]>0 && flip == 1) laneNumbers[3]--; //West Lane
 						try {
-							Thread.sleep(500);
+							Thread.sleep(100);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -277,7 +287,7 @@ public class TrafficHandler {
 						flip = rand.nextInt(4);
 						if(laneNumbers[3]>0 && flip == 1) laneNumbers[3]--; //West Lane
 						try {
-							Thread.sleep(500);
+							Thread.sleep(100);
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
