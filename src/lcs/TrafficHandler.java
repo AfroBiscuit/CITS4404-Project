@@ -27,7 +27,7 @@ public class TrafficHandler {
 	LaneIncrement laneInc = new LaneIncrement();
 	LaneDecrement laneDec = new LaneDecrement();
 	
-	int laneIncSleep = 250;
+	int laneIncSleep = 100;
 	int laneDecSleep = 15000;
 	int timeThresh;
 	
@@ -232,7 +232,7 @@ public class TrafficHandler {
 				
 				if(state == 0){
 					//North & South go, East & West stop
-					while(System.currentTimeMillis() - loopStart < laneDecSleep){
+					//while(System.currentTimeMillis() - loopStart < laneDecSleep){
 						if(laneNumbers[0]>0) laneNumbers[0]--; //North Lane
 						if(laneNumbers[1]>0) laneNumbers[1]--; //South Lane
 						try {
@@ -241,11 +241,11 @@ public class TrafficHandler {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-					}
+					//}
 				}
 				else if(state == 1){
 					//East & West go, North & South stop
-					while(System.currentTimeMillis() - loopStart < laneDecSleep){
+					//while(System.currentTimeMillis() - loopStart < laneDecSleep){
 						if(laneNumbers[2]>0) laneNumbers[2]--; //East Lane
 						if(laneNumbers[3]>0) laneNumbers[3]--; //West Lane
 						try {
@@ -254,11 +254,11 @@ public class TrafficHandler {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-					}
+					//}
 				}
 				else if (state == 2){
 					//North & South turn right, East & West turn left
-					while(System.currentTimeMillis() - loopStart < laneDecSleep){
+					//while(System.currentTimeMillis() - loopStart < laneDecSleep){
 						flip = rand.nextInt(4);
 						if(laneNumbers[0]>0 && flip == 1) laneNumbers[0]--; //North Lane
 						flip = rand.nextInt(4);
@@ -273,11 +273,11 @@ public class TrafficHandler {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-					}
+					//}
 				}
 				else if (state == 3){
 					//East & West turn right, North & South turn left
-					while(System.currentTimeMillis() - loopStart < laneDecSleep){
+					//while(System.currentTimeMillis() - loopStart < laneDecSleep){
 						flip = rand.nextInt(4);
 						if(laneNumbers[0]>0 && flip == 1) laneNumbers[0]--; //North Lane
 						flip = rand.nextInt(4);
@@ -292,7 +292,7 @@ public class TrafficHandler {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
-					}
+					//}
 				}
 				else{
 					//error - no more states to consider
